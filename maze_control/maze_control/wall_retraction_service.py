@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
-"""
-wall_retraction_service.py
 
-One service:
-  - /toggle_walls_1_2  (std_srvs/srv/SetBool)  -> data=True:  wall_1 up,  wall_2 down
-                                                   data=False: wall_1 down, wall_2 up
-
-(wall 3 was removed from the world - it's now the finish line, handled by
-maze_timer_node instead of a service call.)
-
-Each call publishes its targets to the gate walls' bridged cmd_pos topics,
-which ros_gz_bridge forwards into Gazebo as gz.msgs.Double for the
-JointPositionController plugin attached to each prismatic joint.
-
-Publishing is bursted for ~1s on each call rather than sent once, because a
-fresh rclpy Publisher and the bridge's subscriber need a moment to discover
-each other over DDS/gz-transport; a single publish issued right after the
-service call can be dropped before that handshake completes.
-"""
 
 import rclpy
 from rclpy.node import Node
@@ -30,13 +12,8 @@ class WallRetractionService(Node):
     def __init__(self):
         super().__init__('wall_retraction_service')
 
-        # NOTE: your current world has <upper>1.0</upper> on both wall
-        # joints (not 5.0) - default here matches that. wall_2's plugin
-        # also has <initial_position>5</initial_position>, which exceeds
-        # its own 1.0 upper limit and will just saturate at 1.0; worth
-        # fixing in the SDF if that wasn't intentional.
-        self.declare_parameter('up_position', 2.0)      # matches <upper> in SDF
-        self.declare_parameter('down_position', 0.0)    # matches <lower> in SDF
+        self.declare_parameter('up_position', 2.0)      
+        self.declare_parameter('down_position', 0.0)    
         self.declare_parameter('publish_repeats', 10)
         self.declare_parameter('publish_period', 0.1)
 
