@@ -11,10 +11,10 @@
   gz_type_name: "gz.msgs.Double"
   direction: ROS_TO_GZ
 
-- ros_topic_name: "/wall_3/cmd_pos"
-  gz_topic_name: "/model/retractable_wall_3/joint/wall_3_joint/cmd_pos"
-  ros_type_name: "std_msgs/msg/Float64"
-  gz_type_name: "gz.msgs.Double"
+- ros_topic_name: "/maze_timer/status"
+  gz_topic_name: "/maze_timer/status"
+  ros_type_name: "std_msgs/msg/String"
+  gz_type_name: "gz.msgs.StringMsg"
   direction: ROS_TO_GZ
 
 - ros_topic_name: "/clock"

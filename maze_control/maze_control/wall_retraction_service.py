@@ -2,26 +2,26 @@
 """
 wall_retraction_service.py
 
-Two services:
-  - /retract_wall_3    (std_srvs/srv/Trigger)  -> always drives gate 3 up.
+One service:
   - /toggle_walls_1_2  (std_srvs/srv/SetBool)  -> data=True:  wall_1 up,  wall_2 down
                                                    data=False: wall_1 down, wall_2 up
 
-Each call publishes its target(s) to the gate walls' bridged cmd_pos topics,
+(wall 3 was removed from the world - it's now the finish line, handled by
+maze_timer_node instead of a service call.)
+
+Each call publishes its targets to the gate walls' bridged cmd_pos topics,
 which ros_gz_bridge forwards into Gazebo as gz.msgs.Double for the
 JointPositionController plugin attached to each prismatic joint.
 
 Publishing is bursted for ~1s on each call rather than sent once, because a
 fresh rclpy Publisher and the bridge's subscriber need a moment to discover
 each other over DDS/gz-transport; a single publish issued right after the
-service call can be dropped before that handshake completes. The two
-services each get their own burst state/timer so a call to one doesn't
-cancel an in-flight burst from the other.
+service call can be dropped before that handshake completes.
 """
 
 import rclpy
 from rclpy.node import Node
-from std_srvs.srv import SetBool, Trigger
+from std_srvs.srv import SetBool
 from std_msgs.msg import Float64
 
 
@@ -30,8 +30,13 @@ class WallRetractionService(Node):
     def __init__(self):
         super().__init__('wall_retraction_service')
 
-        self.declare_parameter('up_position', 5.0)     # matches <upper> in SDF
-        self.declare_parameter('down_position', 0.0)   # matches <lower> in SDF
+        # NOTE: your current world has <upper>1.0</upper> on both wall
+        # joints (not 5.0) - default here matches that. wall_2's plugin
+        # also has <initial_position>5</initial_position>, which exceeds
+        # its own 1.0 upper limit and will just saturate at 1.0; worth
+        # fixing in the SDF if that wasn't intentional.
+        self.declare_parameter('up_position', 2.0)      # matches <upper> in SDF
+        self.declare_parameter('down_position', 0.0)    # matches <lower> in SDF
         self.declare_parameter('publish_repeats', 10)
         self.declare_parameter('publish_period', 0.1)
 
@@ -42,22 +47,13 @@ class WallRetractionService(Node):
 
         self._pub_wall_1 = self.create_publisher(Float64, '/wall_1/cmd_pos', 10)
         self._pub_wall_2 = self.create_publisher(Float64, '/wall_2/cmd_pos', 10)
-        self._pub_wall_3 = self.create_publisher(Float64, '/wall_3/cmd_pos', 10)
 
-        # Independent burst state per service so concurrent calls don't
-        # cancel each other's timers.
-        self._burst_wall3 = self._new_burst_state()
         self._burst_12 = self._new_burst_state()
 
-        self.srv_wall3 = self.create_service(
-            Trigger, 'retract_wall_3', self._handle_retract_wall_3)
         self.srv_toggle = self.create_service(
             SetBool, 'toggle_walls_1_2', self._handle_toggle_walls_1_2)
 
-        self.get_logger().info(
-            "Services ready: 'retract_wall_3' (Trigger), "
-            "'toggle_walls_1_2' (SetBool)."
-        )
+        self.get_logger().info("Service ready: 'toggle_walls_1_2' (SetBool).")
 
     @staticmethod
     def _new_burst_state():
@@ -81,13 +77,6 @@ class WallRetractionService(Node):
         if state['repeats_left'] <= 0 and state['timer'] is not None:
             state['timer'].cancel()
             state['timer'] = None
-
-    def _handle_retract_wall_3(self, request, response):
-        self._start_burst(self._burst_wall3, [(self._pub_wall_3, self._up)])
-        response.success = True
-        response.message = f'Commanded wall 3 to retract to {self._up:.2f} m.'
-        self.get_logger().info(response.message)
-        return response
 
     def _handle_toggle_walls_1_2(self, request, response):
         if request.data:
@@ -113,7 +102,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

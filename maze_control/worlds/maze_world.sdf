@@ -128,7 +128,7 @@
         <child>wall_link</child>
         <axis>
           <xyz>0 0 1</xyz>
-          <limit><lower>0.0</lower><upper>1.0</upper><effort>200</effort><velocity>0.5</velocity></limit>
+          <limit><lower>0.0</lower><upper>2.0</upper><effort>200</effort><velocity>0.5</velocity></limit>
           <dynamics><damping>5.0</damping></dynamics>
         </axis>
       </joint>
@@ -163,14 +163,14 @@
         <child>wall_link</child>
         <axis>
           <xyz>0 0 1</xyz>
-          <limit><lower>0.0</lower><upper>1.0</upper><effort>200</effort><velocity>0.5</velocity></limit>
+          <limit><lower>0.0</lower><upper>2.0</upper><effort>200</effort><velocity>0.5</velocity></limit>
           <dynamics><damping>5.0</damping></dynamics>
         </axis>
       </joint>
       <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
         <joint_name>wall_2_joint</joint_name>
         <topic>/model/retractable_wall_2/joint/wall_2_joint/cmd_pos</topic>
-        <initial_position>5</initial_position>
+        <initial_position>2.0</initial_position>
         <p_gain>60</p_gain>
         <i_gain>0.05</i_gain>
         <d_gain>5</d_gain>

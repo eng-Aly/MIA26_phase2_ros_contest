@@ -15,19 +15,21 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share', package_name, 'worlds'), glob('worlds/*.sdf')),
-        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'config'),
+            glob('config/*.yaml') + glob('config/*.config')),
         (os.path.join('share', package_name, 'models', 'simple_robot'),
             glob('models/simple_robot/*.sdf')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='ali',
-    maintainer_email='ali@example.com',
+    maintainer_email='aliahmedalimohamed2222@gmail.com',
     description='Maze simulation with retractable walls for ROS 2 Jazzy + Gazebo Harmonic',
     license='Apache-2.0',
     entry_points={
         'console_scripts': [
             'wall_retraction_service = maze_control.wall_retraction_service:main',
+            'maze_timer_node = maze_control.maze_timer_node:main',
         ],
     },
 )
