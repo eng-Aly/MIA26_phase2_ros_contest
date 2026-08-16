@@ -85,7 +85,7 @@ your output should look like this
 ## 7. Solve it 
 
 your target is to make the robot reach the end line using actions and
-services — full details in the [challenge brief](assets/challenge_brief.pdf).
+services — full details in the [challenge brief](assets/challenge_brief).
 
 **note: red walls can move based on services find how to do so**
 
